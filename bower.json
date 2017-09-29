@@ -1,5 +1,12 @@
 {
   "name": "purescript-bonsai-docs",
+  "homepage": "https://github.com/grmble/purescript-bonsai-docs",
+  "description": "Documentation and examples for purescript-bonsai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/grmble/purescript-bonsai-docs.git"
+  },
   "ignore": [
     "**/.*",
     "node_modules",
