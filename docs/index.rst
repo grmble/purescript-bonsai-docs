@@ -3,14 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to purescript-bonsai's documentation!
-=============================================
+purescript-bonsai
+=================
+
+Functional web programming in Purescript.
+Heavily inspired by Elm & using the Elm Virtual DOM.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
+   intro
+   commands
 
 Indices and tables
 ==================
