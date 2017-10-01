@@ -13,15 +13,13 @@ pure commands and tasks.
 and the update function.
 
 Let's look at an example:  there is a text input field,
-it's content is echoed in a html element.  There are also 3 buttons,
-one that paints the paragraph red, one that paints it green,
-and one that starts an animation.
+it's content is echoed in a html element.  One that starts
+the animation and one that stops it. Changing the text will also stop an Animation
+if it's running.
 
 .. raw:: html
 
-    <div>
-      <div id="examplesBasicAnimation"/>
-      <script type="text/javascript" src="_static/examplesBasicAnimation.js"></script>
+    <div id="examplesBasicAnimation">
     </div>
 
 Lets start with the message type. There are 3 possible actions: the text
@@ -33,9 +31,9 @@ is restored::
 
     data Msg
       = SetText String
+      | StartAnimation
       | Animate Color
       | EndAnimation
-
 
 The model is simple as well:  there is the current text, and the current background color.
 The background-color is optional, if it's not present the default background color is
@@ -46,19 +44,22 @@ used::
       , color :: Maybe Color
       }
 
-The update function applies the messages to the model.  It does not
-need to emit any commands, but it could if it wanted to::
+The update function applies the messages to the model.  If the text is changed,
+the update function emits a StopAnimation command, otherwise it just applies
+the messages to the model::
 
     update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
     update model msg =
-       plainResult $
-        case msg of
-          SetText str ->
-            model { text = str }
-          Animate col ->
-            model { color = Just col }
-          EndAnimation ->
-            model { color = Nothing }
+       case msg of
+        SetText str ->
+          { model: model { text = str }
+          , cmd: pureCommand EndAnimation }
+        StartAnimation ->
+          plainResult $ model { color = Just (Color "#FFFFFF") }
+        Animate col ->
+          plainResult $ model { color = map (const col) model.color }
+        EndAnimation ->
+          plainResult $ model { color = Nothing }
 
 
 So where are the commands and their messages coming from?
@@ -71,7 +72,7 @@ From event handlers, and those are defined in the view function::
           input ! onInput SetText ! value m.text
           p #!? (map (\(Color c) -> style "background-color" c) m.color) $
             text m.text
-          button ! onClick (Animate (Color "#FF0000")) $ text "Red"
+          button ! onClick EndAnimation $ text "Stop Animation"
 
 Let's start with a simplified version.  There are two event handlers here:
 ``onInput`` and ``onClick``.  Both are convenience functions.  ``onInput``
@@ -84,11 +85,11 @@ will finally show up as an argument to the update function.
 ``onClick`` is the same, except it just emits a pure command with the message
 given, no decoding of the event is necessary.
 
-So let's add the third button that does a little color animation::
+Let's add the second button that does a little color animation::
 
-          button ! on "click" (const $ pure $ readerTask animate) $ text "Animate"
+    button ! on "click" (const $ pure $ readerTask animate) $ text "Animation"
 
-So what is happening here? ``on`` is not a convenience function, ``on`` is the real deal.
+What is happening here? ``on`` is not a convenience function, ``on`` is the real deal.
 It takes the name of an event ("click") and a ``CmdDecoder``.  This is
 a type alias for a function that takes a DOM event and produces a
 ``Either Error (Cmd eff msg)``.  The ``Either Error`` bit is because
@@ -98,13 +99,14 @@ you when you are decoding a javascript object).  And the ``Cmd eff msg``
 bit means that it will produce a command of the given side effects and message
 type.
 
-So ``(const $ pure $ readerTask animate)`` means: our function will
+``(const $ pure $ readerTask animate)`` means: our function will
 ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
 ``Cmd``.  ``readerTask`` creates this command, and it takes a function::
 
     animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff (Array Msg)
     animate ctx = do
-      for_ (range 8 0xF)
+      emitMessages ctx [ StartAnimation ]
+      for_ (range 0 0xF)
         animateColor
       pure [ EndAnimation ]
 
@@ -113,11 +115,16 @@ ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
           let s = toStringAs hexadecimal x
           let css = "#FFFF" <> s <> "F"
           emitMessages ctx [ Animate (Color css) ]
-          delay (Milliseconds 200.0)
+          delay (Milliseconds 400.0)
 
-So ``animate`` gets a ``TaskContext`` - this is what allows it to emit
+``animate`` gets a ``TaskContext`` - this is what allows it to emit
 messages any time it pleases.  It just loops through 8 different hues
 of yellow and emits them with 200 milliseconds delay.
 
 The source code for this example is at
 https://github.com/grmble/purescript-bonsai-docs/blob/master/src/Examples/Basic/Animation.purs
+
+
+.. raw:: html
+
+    <script type="text/javascript" src="_static/examplesBasicAnimation.js"></script>

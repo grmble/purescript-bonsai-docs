@@ -29,9 +29,7 @@ Clicking the buttons changes the number that is displayed.
 
 .. raw:: html
 
-    <div>
-      <div id="examplesBasicCounter"/>
-      <script type="text/javascript" src="_static/examplesBasicCounter.js"></script>
+    <div id="examplesBasicCounter">
     </div>
 
 In this case, the *Model* is simply an ``Int``.  The messages can be
@@ -71,3 +69,8 @@ later on, but you can also look at the complete
 source code of the counter example:
 
 https://github.com/grmble/purescript-bonsai-docs/blob/master/src/Examples/Basic/Counter.purs
+
+
+.. raw:: html
+
+    <script type="text/javascript" src="_static/examplesBasicCounter.js"></script>

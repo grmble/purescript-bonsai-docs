@@ -16,6 +16,16 @@ Heavily inspired by Elm & using the Elm Virtual DOM.
    intro
    commands
 
+
+.. todo::
+    update function, message queue, redraw
+.. todo::
+    view functions, smolder style
+.. todo::
+    event decoders
+.. todo::
+    performance: keyed elements, lazy, skipping the smolder api
+
 Indices and tables
 ==================
 

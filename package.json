@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github-spamless:grmble/purescript-bonsai-docs.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "uglify": "^0.1.5"
+  }
+}

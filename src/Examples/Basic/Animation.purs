@@ -3,7 +3,7 @@ where
 
 import Prelude
 
-import Bonsai (domElementById, emitMessages, plainResult, program, readerTask)
+import Bonsai (domElementById, emitMessages, plainResult, program, pureCommand, readerTask)
 import Bonsai.Core (UpdateResult)
 import Bonsai.Html (VNode, button, div_, input, p, render, text, (!), (#!?))
 import Bonsai.Html.Attributes (style, value)
@@ -23,6 +23,7 @@ newtype Color =
 
 data Msg
   = SetText String
+  | StartAnimation
   | Animate Color
   | EndAnimation
 
@@ -38,12 +39,12 @@ view m =
       input ! onInput SetText ! value m.text
       p #!? (map (\(Color c) -> style "background-color" c) m.color) $
         text m.text
-      button ! onClick (Animate (Color "#FF0000")) $ text "Red"
-      button ! onClick (Animate (Color "#00FF00")) $ text "Green"
-      button ! on "click" (const $ pure $ readerTask animate) $ text "Animate"
+      button ! onClick EndAnimation $ text "Stop Animation"
+      button ! on "click" (const $ pure $ readerTask animate) $ text "Animation"
 
 animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff (Array Msg)
 animate ctx = do
+  emitMessages ctx [ StartAnimation ]
   for_ (range 8 0xF)
     animateColor
   pure [ EndAnimation ]
@@ -58,14 +59,16 @@ animate ctx = do
 
 update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
 update model msg =
-   plainResult $
-    case msg of
-      SetText str ->
-        model { text = str }
-      Animate col ->
-        model { color = Just col }
-      EndAnimation ->
-        model { color = Nothing }
+   case msg of
+    SetText str ->
+      { model: model { text = str }
+      , cmd: pureCommand EndAnimation }
+    StartAnimation ->
+      plainResult $ model { color = Just (Color "#FFFFFF") }
+    Animate col ->
+      plainResult $ model { color = map (const col) model.color }
+    EndAnimation ->
+      plainResult $ model { color = Nothing }
 
 emptyModel :: Model
 emptyModel =
