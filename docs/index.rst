@@ -15,10 +15,9 @@ Heavily inspired by Elm & using the Elm Virtual DOM.
 
    intro
    commands
+   update
 
 
-.. todo::
-    update function, message queue, redraw
 .. todo::
     view functions, smolder style
 .. todo::
