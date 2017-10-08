@@ -3,11 +3,14 @@ module Main where
 import Prelude
 
 import Bonsai (UpdateResult, domElementById, mapResult, plainResult, program, pureCommand)
-import Bonsai.Html (Property, VNode, a, div_, li, nav, onWithOptions, render, text, ul, vnode, (!), (!?))
-import Bonsai.Html.Attributes (cls, href)
+import Bonsai.Html (Property, VNode, a, div_, li, nav, onWithOptions, render, text, ul, vnode, (!), (#!))
+import Bonsai.Html.Attributes (classList, cls, href, style)
 import Bonsai.Html.Events (onClick, preventDefaultStopPropagation)
+import Bonsai.VirtualDom as VD
 import DOM.Node.Types (ElementId(..))
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
+import Debug.Trace (trace)
 import Examples.Basic.Animation as Animation
 import Examples.Basic.Counter as Counter
 import Partial.Unsafe (unsafePartial)
@@ -45,29 +48,34 @@ view :: MasterModel -> VNode MasterMsg
 view model =
   render $
     div_ ! cls "pure-grid" $ do
-      nav ! cls "pure-u-1-6 pure-menu" $
-        ul ! cls "pure-menu-list" $ do
-          li ! cls "pure-menu-item" !? selected CounterExample model $
-            a ! cls "pure-menu-link" ! href "#"
-              ! onClickPreventDefault (CurrentExample CounterExample)
-              $ text "Counter"
-          li ! cls "pure-menu-item" !? selected AnimationExample model $
-            a ! cls "pure-menu-link" ! href "#"
-              ! onClick (CurrentExample AnimationExample)
-              $ text "Animation"
-      div_ ! cls "pure-u-5-6" $ do
-        case model.active of
-          CounterExample ->
-            vnode (map CounterMsg $ Counter.view model.counterModel)
-          AnimationExample ->
-            vnode (map AnimationMsg $ Animation.view model.animationModel)
+      vnode (VD.lazy viewMenu model.active)
+      div_ ! cls "pure-u-11-12" $
+        div_ #! style "margin-left" "2em" $
+          case model.active of
+            CounterExample ->
+              vnode (map CounterMsg $ Counter.view model.counterModel)
+            AnimationExample ->
+              vnode (map AnimationMsg $ Animation.view model.animationModel)
 
-selected :: Example -> MasterModel -> Maybe (Property MasterMsg)
-selected ex model =
-  if ex == model.active
-    then Just (cls "pure-menu-selected")
-    else Nothing
+viewMenu :: Example -> VNode MasterMsg
+viewMenu active = trace "viewMenu evaluated" \_  ->
+  render $
+    nav ! cls "pure-u-1-12 pure-menu" $
+      ul ! cls "pure-menu-list" $ do
+        li ! menuItemClasses CounterExample $
+          a ! cls "pure-menu-link" ! href "#"
+            ! onClickPreventDefault (CurrentExample CounterExample)
+            $ text "Counter"
+        li ! menuItemClasses AnimationExample $
+          a ! cls "pure-menu-link" ! href "#"
+            ! onClick (CurrentExample AnimationExample)
+            $ text "Animation"
 
+  where
+    menuItemClasses ex =
+      classList
+        [ Tuple "pure-menu-item" true
+        , Tuple "pure-menu-selected" (ex == active) ]
 
 onClickPreventDefault :: forall msg. msg -> Property msg
 onClickPreventDefault msg =
