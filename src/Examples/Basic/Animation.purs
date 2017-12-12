@@ -3,17 +3,13 @@ where
 
 import Prelude
 
-import Bonsai (domElementById, emitMessages, plainResult, program, pureCommand, readerTask)
+import Bonsai (domElementById, emitMessages, plainResult, program, pureCommand, emittingTask)
 import Bonsai.Core (UpdateResult)
 import Bonsai.Html (VNode, button, div_, input, p, render, text, (!), (#!?))
 import Bonsai.Html.Attributes (style, value)
 import Bonsai.Html.Events (on, onClick, onInput)
 import Bonsai.Types (TaskContext)
 import Control.Monad.Aff (Aff, delay)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE)
-import Control.Monad.Eff.Ref (REF)
-import DOM (DOM)
 import DOM.Node.Types (ElementId(..))
 import Data.Array (range)
 import Data.Foldable (for_)
@@ -44,14 +40,14 @@ view m =
       p #!? (map (\(Color c) -> style "background-color" c) m.color) $
         text m.text
       button ! onClick EndAnimation $ text "Stop Animation"
-      button ! on "click" (const $ pure $ readerTask animate) $ text "Animation"
+      button ! on "click" (const $ pure $ emittingTask animate) $ text "Animation"
 
-animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff (Array Msg)
+animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff Unit
 animate ctx = do
   emitMessages ctx [ StartAnimation ]
   for_ (range 8 0xF)
     animateColor
-  pure [ EndAnimation ]
+  pure unit
 
   where
     animateColor x = do

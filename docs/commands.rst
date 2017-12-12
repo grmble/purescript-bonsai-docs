@@ -87,7 +87,7 @@ given, no decoding of the event is necessary.
 
 Let's add the second button that does a little color animation::
 
-    button ! on "click" (const $ pure $ readerTask animate) $ text "Animation"
+    button ! on "click" (const $ pure $ emittingTask animate) $ text "Animation"
 
 What is happening here? ``on`` is not a convenience function, ``on`` is the real deal.
 It takes the name of an event ("click") and a ``CmdDecoder``.  This is
@@ -99,11 +99,11 @@ you when you are decoding a javascript object).  And the ``Cmd eff msg``
 bit means that it will produce a command of the given side effects and message
 type.
 
-``(const $ pure $ readerTask animate)`` means: our function will
+``(const $ pure $ emittingTask animate)`` means: our function will
 ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
-``Cmd``.  ``readerTask`` creates this command, and it takes a function::
+``Cmd``.  ``emittingTask`` creates this command, and it takes a function::
 
-    animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff (Array Msg)
+    animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff Unit
     animate ctx = do
       emitMessages ctx [ StartAnimation ]
       for_ (range 0 0xF)
