@@ -103,9 +103,9 @@ type.
 ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
 ``Cmd``.  ``emittingTask`` creates this command, and it takes a function::
 
-    animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff Unit
+    animate :: forall eff. TaskContext eff Msg -> Aff eff Unit
     animate ctx = do
-      emitMessages ctx [ StartAnimation ]
+      emitMessage ctx StartAnimation
       for_ (range 0 0xF)
         animateColor
       pure [ EndAnimation ]
@@ -114,7 +114,7 @@ ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
         animateColor x = do
           let s = toStringAs hexadecimal x
           let css = "#FFFF" <> s <> "F"
-          emitMessages ctx [ Animate (Color css) ]
+          emitMessages ctx $ Animate (Color css)
           delay (Milliseconds 400.0)
 
 ``animate`` gets a ``TaskContext`` - this is what allows it to emit

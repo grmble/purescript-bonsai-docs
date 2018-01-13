@@ -7,8 +7,6 @@ import Bonsai.Html
 import Bonsai.Html.Attributes
 import Bonsai.Html.Events
 import Data.Maybe
-import DOM
-import DOM.Node.Types
 import Partial.Unsafe (unsafePartial)
 
 type Model = Int
@@ -32,7 +30,5 @@ view model =
     button ! onClick Inc $ text "+"
     button ! onClick Dec $ text "-"
 
-main = unsafePartial $ do
-  Just mainDiv  <- domElementById (ElementId "examplesBasicCounter")
-  _ <- program mainDiv update view 0
-  pure unit
+main =
+  (window >>= program (ElementId "examplesBasicCounter") update view 0) *> pure unit

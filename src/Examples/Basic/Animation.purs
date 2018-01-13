@@ -3,14 +3,13 @@ where
 
 import Prelude
 
-import Bonsai (domElementById, emitMessages, plainResult, program, pureCommand, emittingTask)
+import Bonsai (ElementId(..), emitMessage, emittingTask, plainResult, program, pureCommand, window)
 import Bonsai.Core (UpdateResult)
 import Bonsai.Html (VNode, button, div_, input, p, render, text, (!), (#!?))
 import Bonsai.Html.Attributes (style, value)
 import Bonsai.Html.Events (on, onClick, onInput)
 import Bonsai.Types (TaskContext)
 import Control.Monad.Aff (Aff, delay)
-import DOM.Node.Types (ElementId(..))
 import Data.Array (range)
 import Data.Foldable (for_)
 import Data.Int (hexadecimal, toStringAs)
@@ -42,9 +41,9 @@ view m =
       button ! onClick EndAnimation $ text "Stop Animation"
       button ! on "click" (const $ pure $ emittingTask animate) $ text "Animation"
 
-animate :: forall eff. TaskContext eff (Array Msg) -> Aff eff Unit
+animate :: forall eff. TaskContext eff Msg -> Aff eff Unit
 animate ctx = do
-  emitMessages ctx [ StartAnimation ]
+  emitMessage ctx StartAnimation
   for_ (range 8 0xF)
     animateColor
   pure unit
@@ -53,7 +52,7 @@ animate ctx = do
     animateColor x = do
       let s = toStringAs hexadecimal x
       let css = "#FFFF" <> s <> "F"
-      emitMessages ctx [ Animate (Color css) ]
+      emitMessage ctx (Animate (Color css))
       delay (Milliseconds 200.0)
 
 
@@ -76,7 +75,7 @@ emptyModel =
   , color: Nothing
   }
 
-main = unsafePartial $ do
-  Just elem <- domElementById (ElementId "examplesBasicAnimation")
-  _ <- program elem update view emptyModel
+main = do
+  _ <- window >>=
+       program (ElementId "examplesBasicAnimation") update view emptyModel
   pure unit

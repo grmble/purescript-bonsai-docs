@@ -2,12 +2,11 @@ module Main where
 
 import Prelude
 
-import Bonsai (UpdateResult, domElementById, mapResult, plainResult, program, pureCommand)
+import Bonsai (ElementId(..), UpdateResult, mapResult, plainResult, program, pureCommand, window)
 import Bonsai.Html (Property, VNode, a, div_, li, nav, onWithOptions, render, text, ul, vnode, (!), (#!))
 import Bonsai.Html.Attributes (classList, cls, href, style)
 import Bonsai.Html.Events (onClick, preventDefaultStopPropagation)
 import Bonsai.VirtualDom as VD
-import DOM.Node.Types (ElementId(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Debug.Trace (trace)
@@ -88,7 +87,7 @@ emptyModel =
   , animationModel: Animation.emptyModel
   }
 
-main = unsafePartial $ do
-  Just mainDiv  <- domElementById (ElementId "main")
-  _ <- program mainDiv update view emptyModel
+main =
+  ( window >>=
+    program (ElementId "main") update view emptyModel ) *>
   pure unit
