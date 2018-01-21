@@ -35,18 +35,15 @@ be the update function from our earlier counter example::
 A ``Dec`` message will subtract 1 from the current counter, a ``Inc`` message
 will add 1.  No additional commands have to be emitted, it's a plain ``UpdateResult``.
 
-In the animation example, we saw an additional case:  the animation was cancelled
-(or at least, it's effects prevented from being observed) when the text changed.
-Sometimes it is convenient to not do all the model changes when applying the initial
-message, but rather emit additional commands to handle common behaviour::
+In an old version of the animation example, we saw an additional case:
+a command was issued from the update function.  This is accomplished
+by not returning a plain result, but a real one containing the new model
+and a (possibly empty) command::
 
     case msg of
      SetText str ->
        { model: model { text = str }
        , cmd: pureCommand EndAnimation }
-
-Every time a ``SetText`` messages is applied to the model, a command for
-``EndAnimation`` will be emitted.
 
 Bonsai tries hard to apply as many messages as possible between rendering.  Once
 it has applied all queued messages (and all messages emitted by the updates),

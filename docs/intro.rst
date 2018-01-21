@@ -29,7 +29,9 @@ Clicking the buttons changes the number that is displayed.
 
 .. raw:: html
 
-    <div id="examplesBasicCounter">
+    <p><b>Example</b>:</p>
+    <div class="example" id="examplesBasicCounter">
+      <p>Loading ...</p>
     </div>
 
 In this case, the *Model* is simply an ``Int``.  The messages can be

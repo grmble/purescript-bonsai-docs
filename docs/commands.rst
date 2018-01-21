@@ -12,84 +12,77 @@ pure commands and tasks.
 *Commands* come from two sources: event handlers,
 and the update function.
 
-Let's look at an example:  there is a text input field,
-it's content is echoed in a html element.  One that starts
-the animation and one that stops it. Changing the text will also stop an Animation
-if it's running.
+Let's look at an example:  you are asked if you want to
+download some content.  If the button is pressed, a
+progress bar is displayed.  Once the animation plays out,
+the question is shown again.
 
 .. raw:: html
 
-    <div id="examplesBasicAnimation">
+    <p><b>Example</b>:</p>
+    <div class="example" id="examplesBasicAnimation">
+      <p>Loading ...</p>
     </div>
 
-Lets start with the message type. There are 3 possible actions: the text
-changes, the text background color is set, and the text default background color
-is restored::
 
-    newtype Color =
-      Color String
+Lets start with the message type. There are 2 states we track:
+if there is a download active, and the progress of that download.
+::
 
     data Msg
-      = SetText String
-      | StartAnimation
-      | Animate Color
-      | EndAnimation
+      = Progress Number
+      | InProgress Boolean
 
-The model is simple as well:  there is the current text, and the current background color.
-The background-color is optional, if it's not present the default background color is
-used::
+
+The model is simple as well, it holds the information from the commands::
 
     type Model =
-      { text :: String
-      , color :: Maybe Color
+      { progress :: Number
+      , inProgress :: Boolean
       }
 
-The update function applies the messages to the model.  If the text is changed,
-the update function emits a StopAnimation command, otherwise it just applies
-the messages to the model::
+
+The update function applies the messages to the model.  This update functions
+simply applies the incoming messages to the model.  But it could issue commands
+as well::
 
     update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
     update model msg =
-       case msg of
-        SetText str ->
-          { model: model { text = str }
-          , cmd: pureCommand EndAnimation }
-        StartAnimation ->
-          plainResult $ model { color = Just (Color "#FFFFFF") }
-        Animate col ->
-          plainResult $ model { color = map (const col) model.color }
-        EndAnimation ->
-          plainResult $ model { color = Nothing }
+      plainResult case msg of
+        Progress p ->
+          model { progress = p }
+        InProgress b ->
+          model { inProgress = b }
 
 
 So where are the commands and their messages coming from?
-From event handlers, and those are defined in the view function::
+As I said, the update function could issue commands, it just does
+not in this example.  In this example, the simulated download
+is started when the user clicks a button.
+::
 
     view :: Model -> VNode Msg
     view m =
       render $
-        div_ $ do
-          input ! onInput SetText ! value m.text
-          p #!? (map (\(Color c) -> style "background-color" c) m.color) $
-            text m.text
-          button ! onClick EndAnimation $ text "Stop Animation"
+        div_ $
+          if m.inProgress
+            then do
+              p $ text "Downloading all the things!"
+              meter ! cls "pure-u-1-2" ! value (show m.progress) $ text (show (100.0*m.progress) <> "%")
+            else do
+              p $ text "Would you like to download some cat pictures?"
+              div_ $ button
+                ! cls "pure-button"
+                ! typ "button"
+                ! disabled m.inProgress
+                ! on "click" (const $ pure $ emittingTask simulateDownload)
+                $ text "Start Download"
 
-Let's start with a simplified version.  There are two event handlers here:
-``onInput`` and ``onClick``.  Both are convenience functions.  ``onInput``
-will extract the current value of an input field from the HTML ``input``
-event, in this example it passes that String to the ``SetText`` constructor.
-If the event fires, a pure ``SetText`` command will be emitted.  It will
-bubble up Virtual Dom (maybe being mapped between message types) and
-will finally show up as an argument to the update function.
+We have seen examples with ``onClick``.  ``onClick`` is a convenience function
+that takes a message and issues a command for it.
 
-``onClick`` is the same, except it just emits a pure command with the message
-given, no decoding of the event is necessary.
-
-Let's add the second button that does a little color animation::
-
-    button ! on "click" (const $ pure $ emittingTask animate) $ text "Animation"
-
-What is happening here? ``on`` is not a convenience function, ``on`` is the real deal.
+Here we see ``on "click"``.
+``on`` is not a convenience function, ``on`` is the real deal.
 It takes the name of an event ("click") and a ``CmdDecoder``.  This is
 a type alias for a function that takes a DOM event and produces a
 ``Either Error (Cmd eff msg)``.  The ``Either Error`` bit is because
@@ -99,27 +92,19 @@ you when you are decoding a javascript object).  And the ``Cmd eff msg``
 bit means that it will produce a command of the given side effects and message
 type.
 
-``(const $ pure $ emittingTask animate)`` means: our function will
+``(const $ pure $ emittingTask simulateDownload)`` means: our function will
 ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
 ``Cmd``.  ``emittingTask`` creates this command, and it takes a function::
 
-    animate :: forall eff. TaskContext eff Msg -> Aff eff Unit
-    animate ctx = do
-      emitMessage ctx StartAnimation
-      for_ (range 0 0xF)
-        animateColor
-      pure [ EndAnimation ]
+    simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
+    simulateDownload ctx = do
+      emitMessage ctx (InProgress true)
+      for_ (range 1 100) \i -> do
+        delay (Milliseconds 50.0)
+        emitMessage ctx (Progress $ 0.01 * toNumber i)
+      emitMessage ctx (InProgress false)
+      pure unit
 
-      where
-        animateColor x = do
-          let s = toStringAs hexadecimal x
-          let css = "#FFFF" <> s <> "F"
-          emitMessages ctx $ Animate (Color css)
-          delay (Milliseconds 400.0)
-
-``animate`` gets a ``TaskContext`` - this is what allows it to emit
-messages any time it pleases.  It just loops through 8 different hues
-of yellow and emits them with 200 milliseconds delay.
 
 The source code for this example is at
 https://github.com/grmble/purescript-bonsai-docs/blob/master/src/Examples/Basic/Animation.purs

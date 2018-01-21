@@ -36,7 +36,15 @@ syntax for event handlers).
 If an attribute or event handler is not always needed, a ``Maybe (Property msg)``
 can be put on the element with ``!?``.  Elm's virtual DOM has special
 helpers for styles, and there is an unconditional and a conditional operator
-for styles as well: ``#!`` and ``#!?`` - this is from the animation example::
+for styles as well: ``#!`` and ``#!?`` - this is from
+an old version of the animation example::
 
       p #!? (map (\(Color c) -> style "background-color" c) m.color) $
         text m.text
+
+The styles helper just makes it possible to not provide a single style attribute,
+but many different styles (some of them conditional).  The DSL takes care
+of producing the final style attribute for you.
+
+Note that with the conditional operators, you usually need ``map`` because
+you have to lift over the structure of the ``Maybe``.

@@ -3,76 +3,67 @@ where
 
 import Prelude
 
-import Bonsai (ElementId(..), emitMessage, emittingTask, plainResult, program, pureCommand, window)
+import Bonsai (ElementId(ElementId), emitMessage, emittingTask, plainResult, program, window)
 import Bonsai.Core (UpdateResult)
-import Bonsai.Html (VNode, button, div_, input, p, render, text, (!), (#!?))
-import Bonsai.Html.Attributes (style, value)
-import Bonsai.Html.Events (on, onClick, onInput)
+import Bonsai.Html (VNode, button, div_, meter, p, render, text, (!))
+import Bonsai.Html.Attributes (cls, disabled, typ, value)
+import Bonsai.Html.Events (on)
 import Bonsai.Types (TaskContext)
 import Control.Monad.Aff (Aff, delay)
 import Data.Array (range)
 import Data.Foldable (for_)
-import Data.Int (hexadecimal, toStringAs)
-import Data.Maybe (Maybe(..))
+import Data.Int (toNumber)
 import Data.Time.Duration (Milliseconds(..))
-import Partial.Unsafe (unsafePartial)
 
-newtype Color =
-  Color String
 
 data Msg
-  = SetText String
-  | StartAnimation
-  | Animate Color
-  | EndAnimation
+  = Progress Number
+  | InProgress Boolean
 
 type Model =
-  { text :: String
-  , color :: Maybe Color
+  { progress :: Number
+  , inProgress :: Boolean
   }
 
 view :: Model -> VNode Msg
 view m =
   render $
-    div_ $ do
-      input ! onInput SetText ! value m.text
-      p #!? (map (\(Color c) -> style "background-color" c) m.color) $
-        text m.text
-      button ! onClick EndAnimation $ text "Stop Animation"
-      button ! on "click" (const $ pure $ emittingTask animate) $ text "Animation"
+    div_ $
+      if m.inProgress
+        then do
+          p $ text "Downloading all the things!"
+          meter ! cls "pure-u-1-2" ! value (show m.progress) $ text (show (100.0*m.progress) <> "%")
+        else do
+          p $ text "Would you like to download some cat pictures?"
+          div_ $ button
+            ! cls "pure-button"
+            ! typ "button"
+            ! disabled m.inProgress
+            ! on "click" (const $ pure $ emittingTask simulateDownload)
+            $ text "Start Download"
 
-animate :: forall eff. TaskContext eff Msg -> Aff eff Unit
-animate ctx = do
-  emitMessage ctx StartAnimation
-  for_ (range 8 0xF)
-    animateColor
+simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
+simulateDownload ctx = do
+  emitMessage ctx (InProgress true)
+  for_ (range 1 100) \i -> do
+    delay (Milliseconds 50.0)
+    emitMessage ctx (Progress $ 0.01 * toNumber i)
+  emitMessage ctx (InProgress false)
   pure unit
-
-  where
-    animateColor x = do
-      let s = toStringAs hexadecimal x
-      let css = "#FFFF" <> s <> "F"
-      emitMessage ctx (Animate (Color css))
-      delay (Milliseconds 200.0)
 
 
 update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
 update model msg =
-   case msg of
-    SetText str ->
-      { model: model { text = str }
-      , cmd: pureCommand EndAnimation }
-    StartAnimation ->
-      plainResult $ model { color = Just (Color "#FFFFFF") }
-    Animate col ->
-      plainResult $ model { color = map (const col) model.color }
-    EndAnimation ->
-      plainResult $ model { color = Nothing }
+  plainResult case msg of
+    Progress p ->
+      model { progress = p }
+    InProgress b ->
+      model { inProgress = b }
 
 emptyModel :: Model
 emptyModel =
-  { text: "Hello, world!"
-  , color: Nothing
+  { progress: 0.0
+  , inProgress: false
   }
 
 main = do
