@@ -2,17 +2,16 @@ module Main where
 
 import Prelude
 
-import Bonsai (ElementId(..), UpdateResult, mapResult, plainResult, program, pureCommand, window)
+import Bonsai (Cmd, ElementId(..), plainResult, program, pureCommand, window)
 import Bonsai.Html (Property, VNode, a, div_, li, nav, onWithOptions, render, text, ul, vnode, (!), (#!))
 import Bonsai.Html.Attributes (classList, cls, href, style)
 import Bonsai.Html.Events (onClick, preventDefaultStopPropagation)
 import Bonsai.VirtualDom as VD
-import Data.Maybe (Maybe(..))
+import Data.Bifunctor (bimap)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (trace)
 import Examples.Basic.Animation as Animation
 import Examples.Basic.Counter as Counter
-import Partial.Unsafe (unsafePartial)
 
 data Example
   = CounterExample
@@ -31,17 +30,17 @@ data MasterMsg
   | CounterMsg Counter.Msg
   | AnimationMsg Animation.Msg
 
-update :: forall eff. MasterModel -> MasterMsg -> UpdateResult eff MasterModel MasterMsg
-update model msg =
+update :: forall eff. MasterMsg -> MasterModel -> Tuple (Cmd eff MasterMsg) MasterModel
+update msg model =
   case msg of
     CurrentExample example ->
       plainResult $ model { active = example }
     CounterMsg counterMsg ->
-      mapResult ( model { counterModel = _ } ) CounterMsg
-        (Counter.update model.counterModel counterMsg)
+      bimap (map CounterMsg) ( model { counterModel = _ } )
+        (Counter.update counterMsg model.counterModel)
     AnimationMsg animationMsg ->
-      mapResult ( model { animationModel = _ } ) AnimationMsg
-        (Animation.update model.animationModel animationMsg)
+      bimap (map AnimationMsg) ( model { animationModel = _ } )
+        (Animation.update animationMsg model.animationModel)
 
 view :: MasterModel -> VNode MasterMsg
 view model =
@@ -78,7 +77,7 @@ viewMenu active = trace "viewMenu evaluated" \_  ->
 
 onClickPreventDefault :: forall msg. msg -> Property msg
 onClickPreventDefault msg =
-  onWithOptions "click" preventDefaultStopPropagation (const $ pure $ pureCommand msg)
+  onWithOptions preventDefaultStopPropagation "click" (const $ pure $ pureCommand msg)
 
 emptyModel :: MasterModel
 emptyModel =
