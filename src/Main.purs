@@ -2,10 +2,10 @@ module Main where
 
 import Prelude
 
-import Bonsai (Cmd, ElementId(..), plainResult, program, pureCommand, window)
-import Bonsai.Html (Property, VNode, a, div_, li, nav, onWithOptions, render, text, ul, vnode, (!), (#!))
+import Bonsai (Cmd, ElementId(ElementId), plainResult, program, window)
+import Bonsai.Html (VNode, a, div_, li, nav, render, text, ul, vnode, (!), (#!))
 import Bonsai.Html.Attributes (classList, cls, href, style)
-import Bonsai.Html.Events (onClick, preventDefaultStopPropagation)
+import Bonsai.Html.Events (onClickPreventDefault)
 import Bonsai.VirtualDom as VD
 import Data.Bifunctor (bimap)
 import Data.Tuple (Tuple(..))
@@ -66,7 +66,7 @@ viewMenu active = trace "viewMenu evaluated" \_  ->
             $ text "Counter"
         li ! menuItemClasses AnimationExample $
           a ! cls "pure-menu-link" ! href "#"
-            ! onClick (CurrentExample AnimationExample)
+            ! onClickPreventDefault (CurrentExample AnimationExample)
             $ text "Animation"
 
   where
@@ -74,10 +74,6 @@ viewMenu active = trace "viewMenu evaluated" \_  ->
       classList
         [ Tuple "pure-menu-item" true
         , Tuple "pure-menu-selected" (ex == active) ]
-
-onClickPreventDefault :: forall msg. msg -> Property msg
-onClickPreventDefault msg =
-  onWithOptions preventDefaultStopPropagation "click" (const $ pure $ pureCommand msg)
 
 emptyModel :: MasterModel
 emptyModel =
