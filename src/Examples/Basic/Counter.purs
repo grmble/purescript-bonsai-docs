@@ -1,14 +1,12 @@
 module Examples.Basic.Counter where
 
+import Prelude
 import Bonsai
 import Bonsai.Html
 import Bonsai.Html.Attributes
 import Bonsai.Html.Events
 import Data.Maybe
-import Prelude
-
-import Data.Tuple (Tuple(..))
-import Partial.Unsafe (unsafePartial)
+import Data.Tuple
 
 type Model = Int
 
@@ -17,7 +15,7 @@ data Msg
   | Dec
 
 update :: forall eff. Msg -> Model -> Tuple (Cmd eff Msg) Model
-update msg model = plainResult
+update msg model = Tuple emptyCommand
   case msg of
     Inc ->
       model + 1
