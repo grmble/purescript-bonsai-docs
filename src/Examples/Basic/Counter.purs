@@ -30,4 +30,4 @@ view model =
     button ! onClick Dec $ text "-"
 
 main =
-  (window >>= program (ElementId "examplesBasicCounter") update view 0) *> pure unit
+  (window # program (ElementId "examplesBasicCounter") update view 0) *> pure unit

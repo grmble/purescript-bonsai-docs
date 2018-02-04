@@ -67,6 +67,6 @@ emptyModel =
   }
 
 main = do
-  _ <- window >>=
+  _ <- window #
        program (ElementId "examplesBasicAnimation") update view emptyModel
   pure unit

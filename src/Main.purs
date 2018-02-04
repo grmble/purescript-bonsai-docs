@@ -83,6 +83,6 @@ emptyModel =
   }
 
 main =
-  ( window >>=
+  ( window #
     program (ElementId "main") update view emptyModel ) *>
   pure unit
