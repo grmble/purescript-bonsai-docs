@@ -3,12 +3,13 @@ where
 
 import Prelude
 
-import Bonsai (Cmd, ElementId(ElementId), emitMessage, emittingTask, emptyCommand, program, window)
+import Bonsai (Cmd, ElementId(ElementId), emitMessage, emittingTask, program, window)
 import Bonsai.Html (VNode, button, div_, meter, p, render, text, (!))
 import Bonsai.Html.Attributes (cls, disabled, typ, value)
 import Bonsai.Html.Events (on)
 import Bonsai.Types (TaskContext)
 import Control.Monad.Aff (Aff, delay)
+import Control.Plus (empty)
 import Data.Array (range)
 import Data.Foldable (for_)
 import Data.Int (toNumber)
@@ -54,7 +55,7 @@ simulateDownload ctx = do
 
 update :: forall eff. Msg -> Model -> Tuple (Cmd eff Msg) Model
 update msg model =
-  Tuple emptyCommand case msg of
+  Tuple empty case msg of
     Progress p ->
       model { progress = p }
     InProgress b ->

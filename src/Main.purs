@@ -2,11 +2,12 @@ module Main where
 
 import Prelude
 
-import Bonsai (Cmd, ElementId(..), emptyCommand, program, window)
+import Bonsai (Cmd, ElementId(..), program, window)
 import Bonsai.Html (VNode, a, div_, li, nav, render, text, ul, vnode, (!), (#!))
 import Bonsai.Html.Attributes (classList, cls, href, style)
 import Bonsai.Html.Events (onClickPreventDefault)
 import Bonsai.VirtualDom as VD
+import Control.Plus (empty)
 import Data.Bifunctor (bimap)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (trace)
@@ -34,7 +35,7 @@ update :: forall eff. MasterMsg -> MasterModel -> Tuple (Cmd eff MasterMsg) Mast
 update msg model =
   case msg of
     CurrentExample example ->
-      Tuple emptyCommand $ model { active = example }
+      Tuple empty $ model { active = example }
     CounterMsg counterMsg ->
       bimap (map CounterMsg) ( model { counterModel = _ } )
         (Counter.update counterMsg model.counterModel)
