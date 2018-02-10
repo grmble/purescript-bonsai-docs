@@ -14,7 +14,7 @@ computing a *diff* between two virtual DOM trees.  This diff
 can then be applied to the real browser's DOM.  Only changed
 DOM nodes will be touched by this patching operation.
 
-Bonsai provides a Smolder-style syntax to produce virtual DOM nodes.
+Bonsai provides a Smolder-style syntax to produce virtual DOM nodes. [#f2]_
 View code is expected to import ``Bonsai.Html``, ``Bonsai.Html.Attributes``
 and ``Bonsai.Html.Events``.  These modules provide helper functions
 for easily representing HTML content::
@@ -48,3 +48,11 @@ of producing the final style attribute for you.
 
 Note that with the conditional operators, you usually need ``map`` because
 you have to lift over the structure of the ``Maybe``.
+
+Also note that class properties (``cls``) are special - if multiple class properties
+are present, the virtual DOM will join them (separated by a spaces).  With all
+other properties/attributes, later ones overwrite earlier ones.
+
+.. rubric:: Footnotes
+
+.. [#f2] The HTML Api is optional, you can also work with the VirtualDom directly.

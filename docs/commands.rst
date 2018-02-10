@@ -6,11 +6,11 @@ Messages and Commands
 defines the possible actions that can change the model.
 
 *Commands* are a wrapper around these messages, they encode
-how these messages are delivered.  Basically, there are
-pure commands and tasks.
+how these messages are delivered.
+There are pure commands and tasks.
 
 *Commands* come from two sources: event handlers,
-and the update function.
+and the update function. [#f1]_
 
 Let's look at an example:  you are asked if you want to
 download some content.  If the button is pressed, a
@@ -46,13 +46,13 @@ The update function applies the messages to the model.  This update functions
 simply applies the incoming messages to the model.  But it could issue commands
 as well::
 
-    update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
-    update model msg =
-      plainResult case msg of
-        Progress p ->
-          model { progress = p }
-        InProgress b ->
-          model { inProgress = b }
+    update msg model =
+      Tuple empty
+        case msg of
+          Progress p ->
+            model { progress = p }
+          InProgress b ->
+            model { inProgress = b }
 
 
 So where are the commands and their messages coming from?
@@ -61,7 +61,6 @@ not in this example.  In this example, the simulated download
 is started when the user clicks a button.
 ::
 
-    view :: Model -> VNode Msg
     view m =
       render $
         div_ $
@@ -83,18 +82,14 @@ that takes a message and issues a command for it.
 
 Here we see ``on "click"``.
 ``on`` is not a convenience function, ``on`` is the real deal.
-It takes the name of an event ("click") and a ``CmdDecoder``.  This is
-a type alias for a function that takes a DOM event and produces a
-``Either Error (Cmd eff msg)``.  The ``Either Error`` bit is because
-the decoding of DOM events can fail (in my experience, this is actually
-the most brittle part about Bonsai programs - the type system can't help
-you when you are decoding a javascript object).  And the ``Cmd eff msg``
-bit means that it will produce a command of the given side effects and message
-type.
+It takes the name of an event ("click") and an event handling function.
+This is a function that takes a DOM event and produces a
+``F (Cmd eff msg)``. ``F`` is from ``Data.Foreign``, it handles
+failures and gives you do-notation.
 
 ``(const $ pure $ emittingTask simulateDownload)`` means: our function will
 ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
-``Cmd``.  ``emittingTask`` creates this command, and it takes a function::
+``F Cmd``.  ``emittingTask`` creates this command, and it takes a function::
 
     simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
     simulateDownload ctx = do
@@ -108,6 +103,11 @@ ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
 
 The source code for this example is at
 https://github.com/grmble/purescript-bonsai-docs/blob/master/src/Examples/Basic/Animation.purs
+
+
+.. rubric:: Footnotes
+
+.. [#f1] You can also arrange for commands to be issued from outside via ``issueCommand``
 
 
 .. raw:: html

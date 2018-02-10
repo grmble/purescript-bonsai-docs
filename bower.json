@@ -18,7 +18,9 @@
     "purescript-console": "^3.0.0",
     "purescript-debug": "^3.0.0",
     "purescript-exceptions": "^3.1.0",
-    "purescript-bonsai": "grmble/purescript-bonsai#master"
+    "purescript-bonsai": "grmble/purescript-bonsai#master",
+    "purescript-bonsai-html": "grmble/purescript-bonsai-html#master"
+
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"

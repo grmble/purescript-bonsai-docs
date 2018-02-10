@@ -44,10 +44,10 @@ In this case, the *Model* is simply an ``Int``.  The messages can be
       | Dec
 
 The *update function* applies these messages to the current count.
-In this example, it returns a *plain result* - a new count
-(it could also return commands to apply more messages)::
+It returns a *Tuple* of command and model.  Here the command is
+empty, but it could also return commands to apply more messages::
 
-    update model msg = plainResult $
+    update msg model = Tuple empty $
       case msg of
         Inc ->
           model + 1

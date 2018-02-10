@@ -9,7 +9,7 @@ The *view function* displays the complete model in the browser.
 This means that any observable change must be caused by a change in the
 current model.  How does that work, given that the model is immutable?
 
-Bonsai maintains two mutable references for the application:
+Bonsai maintains mutable references for the application:
 
 * a queue of outstanding messages that should be applied to the current model
 * the current model
@@ -21,11 +21,10 @@ and the next outstanding message.  The *update function* is responsible for
 producing the next model state and, optionally, another command.
 
 Updating the model state without issuing any new commands is the common case.
-There is a helper function ``plainResult`` for this.  An example would
+The idiom here is ``Tuple empty``.  An example would
 be the update function from our earlier counter example::
 
-    update :: forall eff. Model -> Msg -> UpdateResult eff Model Msg
-    update model msg = plainResult $
+    update msg model = Tuple empty $
       case msg of
         Inc ->
           model + 1
@@ -33,7 +32,8 @@ be the update function from our earlier counter example::
           model - 1
 
 A ``Dec`` message will subtract 1 from the current counter, a ``Inc`` message
-will add 1.  No additional commands have to be emitted, it's a plain ``UpdateResult``.
+will add 1.  No additional commands have to be emitted, so it wraps
+the new model in ``Tuple empty``.
 
 In an old version of the animation example, we saw an additional case:
 a command was issued from the update function.  This is accomplished
@@ -42,8 +42,7 @@ and a (possibly empty) command::
 
     case msg of
      SetText str ->
-       { model: model { text = str }
-       , cmd: pureCommand EndAnimation }
+       Tuple (pureCommand EndAnimation) (model { text = str } )
 
 Bonsai tries hard to apply as many messages as possible between rendering.  Once
 it has applied all queued messages (and all messages emitted by the updates),

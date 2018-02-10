@@ -3,8 +3,8 @@ module Main where
 import Prelude
 
 import Bonsai (Cmd, ElementId(..), program, window)
-import Bonsai.Html (VNode, a, div_, li, nav, render, text, ul, vnode, (!), (#!))
-import Bonsai.Html.Attributes (classList, cls, href, style)
+import Bonsai.Html (VNode, a, div_, li, nav, render, text, ul, vnode, (!), (!?), (#!))
+import Bonsai.Html.Attributes (cls, href, style)
 import Bonsai.Html.Events (onClickPreventDefault)
 import Bonsai.VirtualDom as VD
 import Control.Plus (empty)
@@ -61,20 +61,19 @@ viewMenu active = trace "viewMenu evaluated" \_  ->
   render $
     nav ! cls "pure-u-1-12 pure-menu" $
       ul ! cls "pure-menu-list" $ do
-        li ! menuItemClasses CounterExample $
+        li `menuItemClasses` CounterExample $
           a ! cls "pure-menu-link" ! href "#"
             ! onClickPreventDefault (CurrentExample CounterExample)
             $ text "Counter"
-        li ! menuItemClasses AnimationExample $
+        li `menuItemClasses` AnimationExample $
           a ! cls "pure-menu-link" ! href "#"
             ! onClickPreventDefault (CurrentExample AnimationExample)
             $ text "Animation"
 
   where
-    menuItemClasses ex =
-      classList
-        [ Tuple "pure-menu-item" true
-        , Tuple "pure-menu-selected" (ex == active) ]
+    menuItemClasses f ex =
+      f ! cls "pure-menu-item" !?
+      (cls <$> if ex == active then pure "pure-menu-selected" else empty)
 
 emptyModel :: MasterModel
 emptyModel =
