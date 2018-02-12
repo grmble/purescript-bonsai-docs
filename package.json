@@ -9,6 +9,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "uglify": "^0.1.5"
+    "uglify-es": "^3.3.10"
   }
 }
