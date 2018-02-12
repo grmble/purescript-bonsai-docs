@@ -50,7 +50,6 @@ simulateDownload ctx = do
     delay (Milliseconds 50.0)
     emitMessage ctx (Progress $ 0.01 * toNumber i)
   emitMessage ctx (InProgress false)
-  pure unit
 
 
 update :: forall eff. Msg -> Model -> Tuple (Cmd eff Msg) Model

@@ -18,10 +18,6 @@ Heavily inspired by Elm & using the Elm Virtual DOM.
    update
    view
 
-.. todo::
-    event decoders
-.. todo::
-    performance: keyed elements, lazy, skipping the smolder api
 
 Indices and tables
 ==================

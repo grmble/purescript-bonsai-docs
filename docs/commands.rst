@@ -6,7 +6,7 @@ Messages and Commands
 defines the possible actions that can change the model.
 
 *Commands* are a wrapper around these messages, they encode
-how these messages are delivered.
+how the messages are delivered.
 There are pure commands and tasks.
 
 *Commands* come from two sources: event handlers,
@@ -78,18 +78,21 @@ is started when the user clicks a button.
                 $ text "Start Download"
 
 We have seen examples with ``onClick``.  ``onClick`` is a convenience function
-that takes a message and issues a command for it.
+that takes a message and issues a command for it - a pure Command, meaning
+it will emit that particular message and nothing else.
 
-Here we see ``on "click"``.
-``on`` is not a convenience function, ``on`` is the real deal.
+Here we we don't want to emit just one message, we want several, with
+delays in between.  So we have to use ``on``.
 It takes the name of an event ("click") and an event handling function.
 This is a function that takes a DOM event and produces a
 ``F (Cmd eff msg)``. ``F`` is from ``Data.Foreign``, it handles
 failures and gives you do-notation.
 
 ``(const $ pure $ emittingTask simulateDownload)`` means: our function will
-ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
-``F Cmd``.  ``emittingTask`` creates this command, and it takes a function::
+ignore the event (``const``) and always produce a sucessful ``F``.
+``emittingTask`` is the ``Cmd``:  it is an ``Aff`` (think of it
+like a Thread in other programming languages) that can emit as many messages
+as it wants because it has a ``TaskContext``::
 
     simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
     simulateDownload ctx = do
@@ -98,7 +101,11 @@ ignore the event (``const``) and always produce a ``pure`` (i.e. not an error)
         delay (Milliseconds 50.0)
         emitMessage ctx (Progress $ 0.01 * toNumber i)
       emitMessage ctx (InProgress false)
-      pure unit
+
+
+The other types of tasks are ``unitTask``(a task that will not emit any messages, it is
+useful only because of its side effects) and ``simpleTask`` (can emit exactly
+one message).
 
 
 The source code for this example is at
