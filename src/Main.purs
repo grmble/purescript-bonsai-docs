@@ -3,10 +3,9 @@ module Main where
 import Prelude
 
 import Bonsai (Cmd, ElementId(..), program, window)
-import Bonsai.Html (VNode, a, div_, li, nav, render, text, ul, vnode, (!), (!?), (#!))
+import Bonsai.Html (Markup, VNode, a, div_, lazy, li, nav, render, text, ul, vnode, (!), (!?), (#!))
 import Bonsai.Html.Attributes (cls, href, style)
 import Bonsai.Html.Events (onClickPreventDefault)
-import Bonsai.VirtualDom as VD
 import Control.Plus (empty)
 import Data.Bifunctor (bimap)
 import Data.Tuple (Tuple(..))
@@ -47,7 +46,7 @@ view :: MasterModel -> VNode MasterMsg
 view model =
   render $
     div_ ! cls "pure-grid" $ do
-      vnode (VD.lazy viewMenu model.active)
+      lazy viewMenu model.active
       div_ ! cls "pure-u-11-12" $
         div_ #! style "margin-left" "2em" $
           case model.active of
