@@ -85,7 +85,7 @@ Here we we don't want to emit just one message, we want several, with
 delays in between.  So we have to use ``on``.
 It takes the name of an event ("click") and an event handling function.
 This is a function that takes a DOM event and produces a
-``F (Cmd eff msg)``. ``F`` is from ``Data.Foreign``, it handles
+``F (Cmd msg)``. ``F`` is from ``Foreign``, it handles
 failures and gives you do-notation.
 
 ``(const $ pure $ emittingTask simulateDownload)`` means: our function will
@@ -94,7 +94,7 @@ ignore the event (``const``) and always produce a sucessful ``F``.
 like a Thread in other programming languages) that can emit as many messages
 as it wants because it has a ``TaskContext``::
 
-    simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
+    simulateDownload :: TaskContext Msg -> Aff Unit
     simulateDownload ctx = do
       emitMessage ctx (InProgress true)
       for_ (range 1 100) \i -> do

@@ -8,7 +8,7 @@ import Bonsai.Html (VNode, button, div_, meter, p, render, text, (!))
 import Bonsai.Html.Attributes (cls, disabled, typ, value)
 import Bonsai.Html.Events (on)
 import Bonsai.Types (TaskContext)
-import Control.Monad.Aff (Aff, delay)
+import Effect.Aff (Aff, delay)
 import Control.Plus (empty)
 import Data.Array (range)
 import Data.Foldable (for_)
@@ -43,7 +43,7 @@ view m =
             ! on "click" (const $ pure $ emittingTask simulateDownload)
             $ text "Start Download"
 
-simulateDownload :: forall eff. TaskContext eff Msg -> Aff eff Unit
+simulateDownload :: TaskContext Msg -> Aff Unit
 simulateDownload ctx = do
   emitMessage ctx (InProgress true)
   for_ (range 1 100) \i -> do
@@ -52,7 +52,7 @@ simulateDownload ctx = do
   emitMessage ctx (InProgress false)
 
 
-update :: forall eff. Msg -> Model -> Tuple (Cmd eff Msg) Model
+update :: Msg -> Model -> Tuple (Cmd Msg) Model
 update msg model =
   Tuple empty case msg of
     Progress p ->

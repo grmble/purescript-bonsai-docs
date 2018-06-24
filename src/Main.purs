@@ -30,7 +30,7 @@ data MasterMsg
   | CounterMsg Counter.Msg
   | AnimationMsg Animation.Msg
 
-update :: forall eff. MasterMsg -> MasterModel -> Tuple (Cmd eff MasterMsg) MasterModel
+update :: MasterMsg -> MasterModel -> Tuple (Cmd MasterMsg) MasterModel
 update msg model =
   case msg of
     CurrentExample example ->
